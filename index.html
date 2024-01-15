@@ -1,0 +1,128 @@
+<html>
+  <head>
+    <script src="https://cdn.anychart.com/releases/8.12.0/geodata/countries/hong_kong_sar/hong_kong_sar.js"></script>
+    <script src="https://cdn.anychart.com/releases/v8/js/anychart-base.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/v8/js/anychart-ui.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/v8/js/anychart-exports.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/v8/js/anychart-map.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.3.15/proj4.js"></script>
+    <link
+      href="https://cdn.anychart.com/releases/v8/css/anychart-ui.min.css"
+      type="text/css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.anychart.com/releases/v8/fonts/css/anychart-font.min.css"
+      type="text/css"
+      rel="stylesheet"
+    />
+    <style type="text/css">
+      html,
+      body,
+      #container {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container"></div>
+
+    <script>
+      anychart.onDocumentReady(function () {
+        var stationsData = getData();
+
+        var baseLink = "https://en.wikipedia.org/wiki/";
+
+        // create map chart
+        var map = anychart.map();
+
+        var background = map.background();
+        background.fill("#322D31");
+
+        map.unboundRegions().enabled(true).fill("#E1E1E1").stroke("#87CEEB");
+
+        // settings for map chart
+        map.padding([10, 0, 10, 10]).geoData("anychart.maps.hong_kong_sar");
+        map.interactivity().selectionMode("none");
+        map
+          .title()
+          .enabled(true)
+          .useHtml(true)
+          .padding([10, 0, 10, 0])
+          .text(
+            '<span style="color:white;">iPostal Station Location<br/>' +
+              '<span style="color:gray; font-size: 12px;">' +
+              "(Number in a bubble - number of stations in a city)</span>"
+          );
+
+        // create marker series for map chart
+        var mapSeries = map.marker(anychart.data.set(stationsData));
+
+        // setting for marker series for map chart
+        mapSeries
+          .labels()
+          .enabled(true)
+          .position("center-top")
+          .anchor("center-top")
+          .offsetY(-12)
+          .hAlign("center")
+          .fontColor("#263238")
+          .fontWeight("bold")
+          .format(function () {
+            return this.getData("number");
+            // return this.getData('number') + '\n\n' + this.getData('name');
+          });
+
+        mapSeries.size(15).geoIdField("code_hasc");
+
+        mapSeries
+          .hovered()
+          .size(20)
+          .stroke(mapSeries.stroke())
+          .fill(mapSeries.fill());
+
+        // custom text in tooltips for marker series for map chart
+        mapSeries
+          .tooltip()
+          .useHtml(true)
+          .title(false)
+          .separator(false)
+          .format(function () {
+            return (
+              '<span style="color: #d9d9d9;"><span style="color: #fff;">' +
+              this.getData("number") +
+              "</span> stations in " +
+              this.getData("name") +
+              "</span><br/>Click to see more"
+            );
+          });
+
+        // onclick function for points - redirecting client (based on baseLink variable)
+        map.listen("pointClick", function (e) {
+          window.open(baseLink + stationsData[e.pointIndex].name, "_blank");
+        });
+
+        // set container id for the chart
+        map.container("container");
+
+        // initiate chart drawing
+        map.draw();
+      });
+
+      // data for the sample
+      function getData() {
+        return [
+          {
+            name: "中環康樂廣場2號郵政總局",
+            lat: "22.283630",
+            long: "114.159200",
+            number: 12,
+          },
+        ];
+      }
+    </script>
+  </body>
+</html>
